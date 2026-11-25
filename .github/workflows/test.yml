@@ -62,7 +62,7 @@ jobs:
           status=0
           # Each name left out with -skip must be a real test, so a rename cannot drop one unseen.
           for name in TestAListAnotherAccountOwnsIsRefused; do
-            if ! go test -list "^${name}\$" ./... | grep -q -x "$name"; then
+            if ! go test -list "^${name}\$" ./... | grep -x "$name" > /dev/null; then
               echo "::error::-skip names $name, which no test has"
               status=1
             fi
