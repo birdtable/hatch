@@ -1,0 +1,49 @@
+name: Bug report
+description: Something in hatch does not do what it says.
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: hatch version
+      description: The module version, for example v0.1.3.
+    validations:
+      required: true
+  - type: input
+    id: go
+    attributes:
+      label: Go version
+      description: The output of `go version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - linux
+        - darwin
+        - windows
+        - freebsd
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: The shortest command line that shows it
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true

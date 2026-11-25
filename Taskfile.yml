@@ -1,0 +1,139 @@
+version: "3"
+
+# The task tool is pinned in tools/task.mod and built by go tool on first use;
+# nothing is installed on the machine. A tier is a task whose members run together
+# (deps:), each member with a timeout: on its cmds line. A command is a Go program or one binary
+# with its arguments: what was shell is internal/gates, a tool of go.mod that go tool builds once and caches, and
+# internal/gates's test holds this file to it with testkit's taskfile lint.
+
+env:
+  GOWORK: "off"
+
+tasks:
+  default:
+    desc: list the tasks
+    cmds:
+      - go tool -modfile=tools/task.mod task --list
+
+  hooks:
+    desc: point git at hooks/, once per clone
+    cmds:
+      - cmd: git config core.hooksPath hooks
+        timeout: 1m
+
+  fmt:
+    desc: fail on a file gofmt would change
+    cmds:
+      - cmd: go tool gates fmt
+        timeout: 1m
+
+  vet:
+    desc: go vet for each system
+    cmds:
+      - cmd: go tool gates vet
+        timeout: 30m
+
+  lint:
+    desc: golangci-lint with .golangci.yml (no x/sys, syscall or runtime.GOOS, no program started by exec.Command)
+    cmds:
+      - cmd: go tool -modfile=tools/golangci-lint.mod golangci-lint run ./...
+        timeout: 10m
+
+  build:
+    desc: go build for each system
+    cmds:
+      - cmd: go tool gates build
+        timeout: 30m
+
+  test:
+    desc: the tests with the race detector, shuffled, judged by hatch tests itself (a skip-all or zero-test run is red)
+    cmds:
+      # internal/gates sets CGO_ENABLED=1, since a task's env: does not override one the host exports, and -race needs cgo.
+      - cmd: go tool gates test
+        timeout: 10m
+
+  second-consumer:
+    desc: the second-consumer example runs hatch with values unlike any one project's, and its output follows each value
+    cmds:
+      - cmd: go test -count=1 -run '^TestSecondConsumer' ./...
+        timeout: 5m
+
+  taskfile:
+    desc: testkit's lint holds this Taskfile.yml to Go - no shell utility, pipe, redirection, shell loop or /tmp path
+    cmds:
+      - cmd: go test -count=1 -run '^TestTheTaskfileCallsGo$' ./internal/gates/
+        timeout: 5m
+
+  test-push:
+    desc: the tests as test runs them, with -short, so the rows on the real gitleaks are the release tier's alone
+    cmds:
+      - cmd: go tool gates test-push
+        timeout: 10m
+
+  # budget holds a tier to its budget in budgets.yaml, with hatch itself: the tier's elapsed time
+  # is hatch budget's --since. The pre-push tier is not held here: it is judged by CPU time,
+  # go tool gates tier pre-push running its members under hatch budget --cpu against the pre-push-cpu row,
+  # and the pre-push row is only the hang guard (a tier still running at ten times it is killed); no load excuses it.
+  # A pre-commit past its budget passes when the 1-minute
+  # load sampled as the tier started, LOAD, is above 15; the release tier is
+  # held at any load. On a host of the kind budgets.yaml names the budget is the tier's, on a
+  # Linux or Windows x86-64 host that runs the release tier by hand it is the tier's -session row where there is one,
+  # and on any other host, and on a hosted runner (GITHUB_ACTIONS set), none is known and none applies.
+  budget:
+    internal: true
+    silent: true
+    desc: hold a tier's elapsed seconds to its budget in budgets.yaml
+    cmds:
+      - cmd: go tool gates budget {{.TIER}} {{.START}} {{.LOAD}}
+        timeout: 2m
+
+  # A tier that holds members runs them in one call of the gates (go tool gates tier <name>), so the tier
+  # starts the tool once, and takes its start, its load and its budget there: internal/gates's members are
+  # the tasks above, lint, taskfile and second-consumer by the same command, which a row of its test holds equal.
+  pre-commit:
+    desc: the tier a commit runs
+    cmds:
+      - cmd: go tool gates tier pre-commit
+        timeout: 30m
+
+  pre-push:
+    desc: the tier a push runs, and the only claim of done
+    cmds:
+      - cmd: go tool gates tier pre-push
+        timeout: 1h
+
+  vuln:
+    desc: govulncheck over the module
+    cmds:
+      - cmd: go tool -modfile=tools/govulncheck.mod govulncheck ./...
+        timeout: 10m
+
+  verify:
+    desc: go mod verify, and go mod tidy would change nothing
+    cmds:
+      - cmd: go mod verify
+        timeout: 5m
+      - cmd: go mod tidy -diff
+        timeout: 5m
+
+  licenses:
+    desc: every dependency's licence is one we may ship
+    cmds:
+      - cmd: go tool -modfile=tools/go-licenses.mod go-licenses check ./... --allowed_licenses=BSD-2-Clause,BSD-3-Clause,MIT,Apache-2.0,ISC
+        timeout: 10m
+
+  changelog:
+    desc: changie reads its config and the changes folder; an empty unreleased folder passes
+    cmds:
+      - cmd: go tool -modfile=tools/changie.mod changie latest
+        timeout: 10m
+
+  release:
+    desc: the tier a tag runs, the pre-push members and the vulnerability, module, licence and changelog checks; hatch has no size ceiling, so size is not a member
+    vars:
+      LOAD: { sh: go tool gates load }
+      START: { sh: go tool gates now }
+    deps: [fmt, vet, lint, build, test, taskfile, second-consumer, vuln, verify, licenses, changelog]
+    cmds:
+      - task: budget
+        vars: { TIER: release, START: "{{.START}}", LOAD: "{{.LOAD}}" }

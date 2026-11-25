@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t d">
+  <title id="t">hatch</title>
+  <desc id="d">An open floor hatch, its lid standing up in coral. Drawn larger, for small sizes.</desc>
+  <rect width="256" height="256" rx="56" fill="#22264A"/><g transform="translate(128 128) scale(1.75) translate(-180 -148)"><path d="M146 190 L160 160 H212 L198 190 Z" fill="none" stroke="#FFF6EC" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M160 160 V112 H212 V160" fill="none" stroke="#E8735A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

@@ -1,0 +1,26 @@
+{"Time":"2026-11-21T16:01:59.759047Z","Action":"start","Package":"example.com/fix/skipleaf"}
+{"Time":"2026-11-21T16:01:59.806455Z","Action":"run","Package":"example.com/fix/skipleaf","Test":"TestRuns"}
+{"Time":"2026-11-21T16:01:59.806507Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestRuns","Output":"=== RUN   TestRuns\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806548Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestRuns","Output":"--- PASS: TestRuns (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806554Z","Action":"pass","Package":"example.com/fix/skipleaf","Test":"TestRuns","Elapsed":0}
+{"Time":"2026-11-21T16:01:59.806559Z","Action":"run","Package":"example.com/fix/skipleaf","Test":"TestSkips"}
+{"Time":"2026-11-21T16:01:59.806561Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestSkips","Output":"=== RUN   TestSkips\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806564Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestSkips","Output":"    skipleaf_test.go:7: needs a network\n"}
+{"Time":"2026-11-21T16:01:59.806567Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestSkips","Output":"--- SKIP: TestSkips (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806568Z","Action":"skip","Package":"example.com/fix/skipleaf","Test":"TestSkips","Elapsed":0}
+{"Time":"2026-11-21T16:01:59.80657Z","Action":"run","Package":"example.com/fix/skipleaf","Test":"TestParent"}
+{"Time":"2026-11-21T16:01:59.806571Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent","Output":"=== RUN   TestParent\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806572Z","Action":"run","Package":"example.com/fix/skipleaf","Test":"TestParent/runs"}
+{"Time":"2026-11-21T16:01:59.806574Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent/runs","Output":"=== RUN   TestParent/runs\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806583Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent/runs","Output":"--- PASS: TestParent/runs (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806585Z","Action":"pass","Package":"example.com/fix/skipleaf","Test":"TestParent/runs","Elapsed":0}
+{"Time":"2026-11-21T16:01:59.806588Z","Action":"run","Package":"example.com/fix/skipleaf","Test":"TestParent/skips"}
+{"Time":"2026-11-21T16:01:59.806589Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent/skips","Output":"=== RUN   TestParent/skips\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806594Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent/skips","Output":"    skipleaf_test.go:11: no root here\n"}
+{"Time":"2026-11-21T16:01:59.806598Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent/skips","Output":"--- SKIP: TestParent/skips (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806599Z","Action":"skip","Package":"example.com/fix/skipleaf","Test":"TestParent/skips","Elapsed":0}
+{"Time":"2026-11-21T16:01:59.8066Z","Action":"output","Package":"example.com/fix/skipleaf","Test":"TestParent","Output":"--- PASS: TestParent (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806602Z","Action":"pass","Package":"example.com/fix/skipleaf","Test":"TestParent","Elapsed":0}
+{"Time":"2026-11-21T16:01:59.806602Z","Action":"output","Package":"example.com/fix/skipleaf","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:01:59.806908Z","Action":"output","Package":"example.com/fix/skipleaf","Output":"ok  \texample.com/fix/skipleaf\t0.048s\n"}
+{"Time":"2026-11-21T16:01:59.80692Z","Action":"pass","Package":"example.com/fix/skipleaf","Elapsed":0.048}

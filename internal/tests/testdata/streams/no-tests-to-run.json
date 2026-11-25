@@ -1,0 +1,5 @@
+{"Time":"2026-11-21T16:02:00.686451Z","Action":"start","Package":"example.com/fix/nofuncs"}
+{"Time":"2026-11-21T16:02:00.74298Z","Action":"output","Package":"example.com/fix/nofuncs","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-11-21T16:02:00.743086Z","Action":"output","Package":"example.com/fix/nofuncs","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.743291Z","Action":"output","Package":"example.com/fix/nofuncs","Output":"ok  \texample.com/fix/nofuncs\t0.057s [no tests to run]\n"}
+{"Time":"2026-11-21T16:02:00.743304Z","Action":"pass","Package":"example.com/fix/nofuncs","Elapsed":0.057}

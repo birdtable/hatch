@@ -1,0 +1,53 @@
+# hatch's lint: golangci-lint v2, pinned in tools/golangci-lint.mod, run by the lint task. The rows keep
+# operating-system knowledge out of hatch's own code: it comes through go-proc, so no package of the
+# operating system is imported, the system's name is not read, and no program is started directly.
+version: "2"
+
+run:
+  tests: true
+
+# Only these rows: hatch has had no other lint.
+linters:
+  default: none
+  enable:
+    - depguard
+    - forbidigo
+  settings:
+    depguard:
+      rules:
+        # No operating-system package in a command; go-proc covers what hatch needs.
+        no-os-packages:
+          files: ["$all"]
+          deny:
+            - pkg: golang.org/x/sys
+              desc: "operating-system knowledge comes through a go-proc name"
+            - pkg: syscall
+              desc: "operating-system knowledge comes through a go-proc name"
+    forbidigo:
+      analyze-types: true
+      forbid:
+        # No read of the system's name in a command's code.
+        - pattern: ^runtime\.GOOS$
+          msg: "no runtime.GOOS in a command's code; ask go-proc for a name"
+        # Ban starting a program, not the os/exec import. exec.LookPath stays allowed.
+        - pattern: ^exec\.(Command|CommandContext)$
+          pkg: ^os/exec$
+          msg: "start programs through go-proc"
+        - pattern: ^os\.StartProcess$
+          msg: "start programs through go-proc"
+        - pattern: ^syscall\.(ForkExec|Exec|StartProcess)$
+          msg: "start programs through go-proc"
+  exclusions:
+    presets: []
+    rules:
+      # Windows sends no TERM, and go-proc refuses a grace period there without a terminal and a
+      # console, which hatch's test run has neither of. graceFor is zero on Windows until go-proc
+      # names "is a grace allowed here".
+      - path: ^internal/tests/tests\.go$
+        linters: [forbidigo]
+        text: "runtime\\.GOOS"
+      # hatch tests packages starts `go list ./...` with os/exec. Moving it to go-proc's proc.Run needs
+      # a timeout and an output cap that command has never had, so it stays an exception.
+      - path: ^internal/tests/packages\.go$
+        linters: [forbidigo]
+        text: "exec\\.CommandContext"

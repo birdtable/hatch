@@ -1,0 +1,22 @@
+# Each tier's budget, in seconds, read by hatch budget (Taskfile.yml's budget task): ceilings, which stand over
+# any ratio of the floor. The values are provisional: the floor of each tier, the least of three runs
+# on a quiet host of the kind named below, is added beside it when one is measured.
+# A pre-commit over its budget at a 1-minute load above 15 as it started passes with the load printed, the release
+# tier does not. On a Linux or Windows x86-64 host that runs the release tier by hand, the budget is the tier's
+# -session row, and on another kind of host, or a hosted runner (GITHUB_ACTIONS set), none applies. A row is a key,
+# a colon, a space and a number; hatch budget
+# reads it through the Taskfile's --row, and the host line is read apart.
+# The pre-push tier is judged by pre-push-cpu, the CPU time of its members, user plus system (hatch budget
+# --cpu), the same on a quiet Mac and a loaded one, so no load excuses it. Its wall row, pre-push, is only the hang
+# guard: a push still running at ten times it is killed. The CPU row is the least of three runs of the tier, each
+# after go clean -testcache so no cached test result is read, on a Mac (Darwin-arm64, 15 CPUs):
+# 65.9, 61.6 and 65.2 s of CPU, at loads 14.6, 13.9 and 10.7 before the tier. The row is 61.6 s plus 28 s of room, 45 percent, 24 s over the worst of
+# the three; it is under 150, the 10 s wall row times the 15 CPUs. A push with a fully cold cache that goes red is
+# warmed once and retried, never waived.
+host: Darwin-arm64
+pre-commit: 2
+pre-push: 10
+pre-push-cpu-floor: 62
+pre-push-cpu: 90
+release: 15
+release-session: 60

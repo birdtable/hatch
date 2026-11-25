@@ -1,0 +1,5 @@
+#!/bin/sh
+# The pre-commit tier of the Taskfile.
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+exec go tool -modfile=tools/task.mod task pre-commit

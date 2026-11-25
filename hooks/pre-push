@@ -1,0 +1,5 @@
+#!/bin/sh
+# The pre-push tier of the Taskfile: the only claim of done.
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+exec go tool -modfile=tools/task.mod task pre-push

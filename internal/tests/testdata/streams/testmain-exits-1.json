@@ -1,0 +1,8 @@
+{"Time":"2026-11-21T16:02:00.866175Z","Action":"start","Package":"example.com/fix/mainfail"}
+{"Time":"2026-11-21T16:02:00.921699Z","Action":"run","Package":"example.com/fix/mainfail","Test":"TestPasses"}
+{"Time":"2026-11-21T16:02:00.921746Z","Action":"output","Package":"example.com/fix/mainfail","Test":"TestPasses","Output":"=== RUN   TestPasses\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.921779Z","Action":"output","Package":"example.com/fix/mainfail","Test":"TestPasses","Output":"--- PASS: TestPasses (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.921787Z","Action":"pass","Package":"example.com/fix/mainfail","Test":"TestPasses","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.921791Z","Action":"output","Package":"example.com/fix/mainfail","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.922083Z","Action":"output","Package":"example.com/fix/mainfail","Output":"FAIL\texample.com/fix/mainfail\t0.056s\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.922091Z","Action":"fail","Package":"example.com/fix/mainfail","Elapsed":0.056}

@@ -1,0 +1,31 @@
+{"Time":"2026-11-21T16:02:00.262545Z","Action":"start","Package":"example.com/fix/fail"}
+{"Time":"2026-11-21T16:02:00.316073Z","Action":"run","Package":"example.com/fix/fail","Test":"TestPasses"}
+{"Time":"2026-11-21T16:02:00.316115Z","Action":"output","Package":"example.com/fix/fail","Test":"TestPasses","Output":"=== RUN   TestPasses\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316144Z","Action":"output","Package":"example.com/fix/fail","Test":"TestPasses","Output":"--- PASS: TestPasses (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316152Z","Action":"pass","Package":"example.com/fix/fail","Test":"TestPasses","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.316156Z","Action":"run","Package":"example.com/fix/fail","Test":"TestFails"}
+{"Time":"2026-11-21T16:02:00.316157Z","Action":"output","Package":"example.com/fix/fail","Test":"TestFails","Output":"=== RUN   TestFails\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316159Z","Action":"output","Package":"example.com/fix/fail","Test":"TestFails","Output":"    fail_test.go:7: wrong answer\n","OutputType":"error"}
+{"Time":"2026-11-21T16:02:00.316161Z","Action":"output","Package":"example.com/fix/fail","Test":"TestFails","Output":"--- FAIL: TestFails (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316162Z","Action":"fail","Package":"example.com/fix/fail","Test":"TestFails","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.316163Z","Action":"run","Package":"example.com/fix/fail","Test":"TestParent"}
+{"Time":"2026-11-21T16:02:00.316165Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent","Output":"=== RUN   TestParent\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316166Z","Action":"run","Package":"example.com/fix/fail","Test":"TestParent/passes"}
+{"Time":"2026-11-21T16:02:00.316167Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent/passes","Output":"=== RUN   TestParent/passes\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316173Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent/passes","Output":"--- PASS: TestParent/passes (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316175Z","Action":"pass","Package":"example.com/fix/fail","Test":"TestParent/passes","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.316176Z","Action":"run","Package":"example.com/fix/fail","Test":"TestParent/fails"}
+{"Time":"2026-11-21T16:02:00.316183Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent/fails","Output":"=== RUN   TestParent/fails\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.31619Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent/fails","Output":"    fail_test.go:11: a subtest fails\n","OutputType":"error"}
+{"Time":"2026-11-21T16:02:00.316192Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent/fails","Output":"--- FAIL: TestParent/fails (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316193Z","Action":"fail","Package":"example.com/fix/fail","Test":"TestParent/fails","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.316194Z","Action":"output","Package":"example.com/fix/fail","Test":"TestParent","Output":"--- FAIL: TestParent (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316196Z","Action":"fail","Package":"example.com/fix/fail","Test":"TestParent","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.316197Z","Action":"run","Package":"example.com/fix/fail","Test":"TestSkips"}
+{"Time":"2026-11-21T16:02:00.316198Z","Action":"output","Package":"example.com/fix/fail","Test":"TestSkips","Output":"=== RUN   TestSkips\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316206Z","Action":"output","Package":"example.com/fix/fail","Test":"TestSkips","Output":"    fail_test.go:14: skipped beside a failure\n"}
+{"Time":"2026-11-21T16:02:00.316208Z","Action":"output","Package":"example.com/fix/fail","Test":"TestSkips","Output":"--- SKIP: TestSkips (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316209Z","Action":"skip","Package":"example.com/fix/fail","Test":"TestSkips","Elapsed":0}
+{"Time":"2026-11-21T16:02:00.31621Z","Action":"output","Package":"example.com/fix/fail","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316582Z","Action":"output","Package":"example.com/fix/fail","Output":"FAIL\texample.com/fix/fail\t0.054s\n","OutputType":"frame"}
+{"Time":"2026-11-21T16:02:00.316592Z","Action":"fail","Package":"example.com/fix/fail","Elapsed":0.054}
