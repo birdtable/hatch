@@ -276,6 +276,11 @@ func TestAFormOfNoUsageIsExit2(t *testing.T) {
 		{"--root", dir, "--max-entries", "0", "--", "x"},
 		{"--root", dir, "--max-bytes", "-1", "--", "x"},
 		{"--root", dir, "--timeout", "0s", "--", "x"},
+		{"--root", dir, "--exclude", "", "--", "x"},
+		{"--root", dir, "--exclude", " ", "--", "x"},
+		{"--root", dir, "--exclude", "a/b", "--", "x"},
+		{"--root", dir, "--exclude", `a\b`, "--", "x"},
+		{"--root", dir, "--exclude"},
 		{"--root", dir, "--", "hatch-writes-no-such-program"},
 		{"--root", filepath.Join(dir, "a.txt"), "--", os.Args[0]},
 		{"--root", filepath.Join(dir, "missing"), "--", os.Args[0]},
@@ -292,9 +297,82 @@ func TestAFormOfNoUsageIsExit2(t *testing.T) {
 // What it costs when this fails: a flag the command takes is in no text a person reads.
 func TestTheUsageNamesEachFlagAndExitCode(t *testing.T) {
 	t.Parallel()
-	for _, w := range []string{"--root", "--max-entries", "--max-bytes", "--timeout", "added <path>", "changed <path>", "removed <path>", "exit codes of hatch writes", "the command's own"} {
+	for _, w := range []string{"--root", "--exclude", "--max-entries", "--max-bytes", "--timeout", "added <path>", "changed <path>", "removed <path>", "exit codes of hatch writes", "the command's own"} {
 		if !strings.Contains(usage, w) {
 			t.Errorf("the usage lacks %q", w)
 		}
+	}
+}
+
+// pnpm is a tree whose node_modules holds a file with a second name, as a pnpm store links its packages.
+func pnpm(t *testing.T) string {
+	t.Helper()
+	dir := tree(t, "a.txt", "node_modules/x/p.js")
+	if err := os.Link(filepath.Join(dir, "node_modules", "x", "p.js"), filepath.Join(dir, "node_modules", "x", "q.js")); err != nil {
+		t.Skip("no hard links here:", err)
+	}
+	return dir
+}
+
+// A folder named by --exclude, at any depth, is skipped inside the walk: a hard link under it is no refusal, which the
+// same tree without the flag is, and a write under it is no write.
+//
+// What it costs when this fails: a tree with a pnpm node_modules cannot be held at all, or a command that writes
+// into a folder the caller left out is red for it.
+func TestAnExcludedNameIsLeftOutOfTheWalkAtAnyDepth(t *testing.T) {
+	t.Parallel()
+	t.Run("a hard link under it is green with the flag and red without", func(t *testing.T) {
+		t.Parallel()
+		out, errs, code := hold(t, pnpm(t), []string{"--exclude", "node_modules"}, "say:x")
+		if code != 0 || !strings.Contains(out, "ok: ") || errs != "" {
+			t.Errorf("with the flag: exit %d, out %q, err %q; want green", code, out, errs)
+		}
+		out, errs, code = hold(t, pnpm(t), nil, "say:x")
+		if code != 1 || out != "" || !strings.Contains(errs, "the command was not run") || !strings.Contains(errs, "node_modules") {
+			t.Errorf("without the flag: exit %d, out %q, err %q; want the refusal naming node_modules", code, out, errs)
+		}
+	})
+	t.Run("a write under it, at the top or deeper, is no write", func(t *testing.T) {
+		t.Parallel()
+		dir := tree(t, "a.txt", "node_modules/x/p.js", "pkg/node_modules/y.js")
+		out, errs, code := hold(t, dir, []string{"--exclude", "node_modules"}, "write:node_modules/x/p.js", "write:node_modules/new.js", "write:pkg/node_modules/y.js", "write:pkg/node_modules/z.js")
+		if code != 0 || !strings.Contains(out, "ok: ") || errs != "" {
+			t.Errorf("exit %d, out %q, err %q; want green", code, out, errs)
+		}
+	})
+	t.Run("a write beside it is still named", func(t *testing.T) {
+		t.Parallel()
+		out, errs, code := hold(t, pnpm(t), []string{"--exclude", "node_modules"}, "write:node_modules/x/new.js", "write:new.txt")
+		if code != 1 || !strings.HasPrefix(out, "added new.txt\n") || strings.Contains(out, "node_modules") || !strings.Contains(errs, "wrote 1 paths") {
+			t.Errorf("exit %d, out %q, err %q; want only new.txt named", code, out, errs)
+		}
+	})
+	t.Run("the flag repeats, and a name that is a file is left out too", func(t *testing.T) {
+		t.Parallel()
+		dir := tree(t, "a.txt", "dist/b.js", "notes.log")
+		out, errs, code := hold(t, dir, []string{"--exclude", "dist", "--exclude", "notes.log"}, "write:dist/c.js", "write:notes.log")
+		if code != 0 || !strings.Contains(out, "ok: ") || errs != "" {
+			t.Errorf("exit %d, out %q, err %q; want green", code, out, errs)
+		}
+	})
+}
+
+// An exclude that matches nothing changes nothing: a write is named as it is with no flag, and a write that
+// leaves the tree as it was is green as before.
+//
+// What it costs when this fails: giving a name that is not there hides a write elsewhere.
+func TestAnExcludeThatMatchesNothingChangesNothing(t *testing.T) {
+	t.Parallel()
+	flags := []string{"--exclude", "no-such-name"}
+	out, errs, code := hold(t, tree(t, "a.txt"), flags, "write:new.txt", "write:a.txt")
+	if code != 1 || !strings.HasPrefix(out, "changed a.txt\nadded new.txt\n") || !strings.Contains(errs, "wrote 2 paths") {
+		t.Errorf("exit %d, out %q, err %q; want the same two paths as with no flag", code, out, errs)
+	}
+	out, errs, code = hold(t, tree(t, "a.txt"), flags, "say:x")
+	if code != 0 || !strings.Contains(out, "ok: ") || errs != "" {
+		t.Errorf("a command that writes nothing: exit %d, out %q, err %q; want green", code, out, errs)
+	}
+	if _, _, code = hold(t, pnpm(t), flags, "say:x"); code != 1 {
+		t.Errorf("a hard link under node_modules with another name excluded: exit %d, want 1", code)
 	}
 }
