@@ -44,7 +44,8 @@ jobs:
       # go test runs as the release tier runs it, with the race detector, in shuffled order and never
       # from the test cache, and without -short, so the rows on the real gitleaks run: the tests build
       # the gitleaks that tools/gitleaks.mod pins, with the checksums of tools/gitleaks.sum, on each
-      # system. It writes its events as JSON for the step after it to count.
+      # system. No gitleaks binary is downloaded: the one built from that pinned, checksummed module
+      # (v8.30.1) is the one the rows use. It writes its events as JSON for the step after it to count.
       #
       # TestAListAnotherAccountOwnsIsRefused needs a file that another account owns, which only root
       # can plant, and a test that skips fails this job. So the run leaves it out with -skip on every
