@@ -61,8 +61,9 @@ jobs:
           events="$RUNNER_TEMP/go-test.json"
           status=0
           # Each name left out with -skip must be a real test, so a rename cannot drop one unseen.
+          # The row is in a file built for Unix only, so Windows has no such test to find.
           for name in TestAListAnotherAccountOwnsIsRefused; do
-            if ! go test -list "^${name}\$" ./... | grep -x "$name" > /dev/null; then
+            if [ "$RUNNER_OS" != Windows ] && ! go test -list "^${name}\$" ./... | grep -x "$name" > /dev/null; then
               echo "::error::-skip names $name, which no test has"
               status=1
             fi
