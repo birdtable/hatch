@@ -1,0 +1,97 @@
+# Runs go vet and go test on GitHub's hosted runners, on Linux, macOS and Windows, for every pull
+# request, every push to main, and by hand. It holds no secret, and its token reads the repository's
+# contents alone. Every module is fetched through the public Go module proxy, as a program that
+# imports hatch fetches them, and nothing is kept in the Actions cache.
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      GOFLAGS: -mod=mod
+      GOPROXY: https://proxy.golang.org
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      # GOFLAGS=-mod=mod would let go vet and go test pass on a go.mod or go.sum that is not tidy, so
+      # this step fails first on any change go mod tidy would make, and prints it.
+      - name: go mod tidy
+        run: go mod tidy -diff
+      - name: go vet
+        run: go vet ./...
+      # go test runs as the release tier runs it, with the race detector, in shuffled order and never
+      # from the test cache, and without -short, so the rows on the real gitleaks run: the tests build
+      # the gitleaks that tools/gitleaks.mod pins, with the checksums of tools/gitleaks.sum, on each
+      # system. No gitleaks binary is downloaded: the one built from that pinned, checksummed module
+      # (v8.30.1) is the one the rows use. It writes its events as JSON for the step after it to count.
+      #
+      # TestAListAnotherAccountOwnsIsRefused needs a file that another account owns, which only root
+      # can plant, and a test that skips fails this job. So the run leaves it out with -skip on every
+      # system, and on Linux the same row then runs alone as root, from a test binary built first.
+      - name: go test
+        id: test
+        run: |
+          race=-race
+          if [ "$(go env CGO_ENABLED)" != 1 ]; then
+            race=
+          fi
+          echo "GO_TEST_RACE=${race:-off}" >> "$GITHUB_ENV"
+          events="$RUNNER_TEMP/go-test.json"
+          status=0
+          go test -json $race -shuffle=on -count=1 -skip '^TestAListAnotherAccountOwnsIsRefused$' ./... > "$events" || status=1
+          if [ "$RUNNER_OS" = Linux ]; then
+            go test -c $race -o "$RUNNER_TEMP/names.test" ./internal/names || status=1
+            (
+              set -o pipefail
+              cd internal/names
+              sudo -E env "PATH=$PATH" "$RUNNER_TEMP/names.test" -test.v=test2json -test.count=1 -test.run '^TestAListAnotherAccountOwnsIsRefused$' \
+                | go tool test2json -p github.com/birdtable/hatch/internal/names >> "$events"
+            ) || status=1
+          fi
+          exit $status
+      # Counts the passed, failed and skipped tests into the log and the job summary, prints each
+      # failed or skipped test's own output, and is red on any failure and on any skip: a test that
+      # skips on a runner proves nothing there. The names -skip leaves out never run in the first run,
+      # so they never count as skipped.
+      - name: test counts
+        if: ${{ !cancelled() && steps.test.outcome != 'skipped' }}
+        env:
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+        run: |
+          events="$RUNNER_TEMP/go-test.json"
+          count() { jq -R -n --arg a "$1" '[inputs | fromjson? | select(.Test != null and .Action == $a)] | length' "$events" | tr -d '\r'; }
+          passed=$(count pass)
+          failed=$(count fail)
+          skipped=$(count skip)
+          jq -R -n -r '[inputs | fromjson? | select(.Test != null)] as $e
+            | ($e | map(select(.Action == "fail" or .Action == "skip") | .Package + " " + .Test)) as $bad
+            | $e[] | select(.Action == "output") | select((.Package + " " + .Test) as $k | any($bad[]; . == $k)) | .Output' "$events" | tr -d '\r'
+          jq -R -n -r '[inputs | fromjson? | select(.Test == null and .Action == "fail")] | .[] | "FAIL " + .Package' "$events" | tr -d '\r'
+          line="tests: $passed passed, $failed failed, $skipped skipped (race $GO_TEST_RACE)"
+          echo "$line"
+          echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$TEST_OUTCOME" != success ] || [ "$failed" -ne 0 ] || [ "$skipped" -ne 0 ] || [ "$passed" -eq 0 ]; then
+            exit 1
+          fi
