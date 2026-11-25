@@ -3,9 +3,9 @@ module github.com/birdtable/hatch
 go 1.27.1
 
 require (
-	github.com/birdtable/go-files v0.15.0
+	github.com/birdtable/go-files v0.16.1
 	github.com/birdtable/go-proc v0.7.0
-	github.com/birdtable/go-testkit/taskfile v0.1.0
+	github.com/birdtable/go-testkit/taskfile v0.1.1
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/mod v0.42.0
 	gotest.tools/gotestsum v1.13.0

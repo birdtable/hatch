@@ -5,7 +5,7 @@
 // should not hold, and go-proc's proc.Run, which starts the command; the standard library for the rest.
 // Adds: the diff of the two listings by path, the exit code of the command kept beside the list, and a
 // refusal of the tree that names its path.
-// Configured by: the calling project: the root, the caps on the walk, the command and its deadline.
+// Configured by: the calling project: the root, the names to leave out, the caps on the walk, the command and its deadline.
 package writes
 
 import (
@@ -46,11 +46,12 @@ const (
 	defaultTimeout = 30 * time.Minute
 )
 
-const usage = `usage: hatch writes [--root <dir>] [--max-entries <n>] [--max-bytes <n>] [--timeout <duration>] -- <command> [args]
+const usage = `usage: hatch writes [--root <dir>] [--exclude <name>]... [--max-entries <n>] [--max-bytes <n>] [--timeout <duration>] -- <command> [args]
 
 hatch writes runs the command and is green only when the command wrote nothing under the root.
 
 --root         the folder to hold the command to (default: the top of the git checkout the working folder is in)
+--exclude      a name to leave out of both listings, at any depth, and to leave unopened (repeatable; none by default)
 --max-entries  the most entries (folders, files and links) one listing takes (default 200000)
 --max-bytes    the most bytes of file content one listing hashes (default 1073741824)
 --timeout      how long the command may run (default 30m); it is ended, with its tree, at the deadline
@@ -62,9 +63,15 @@ with another line is changed. It prints each as "added <path>", "changed <path>"
 line, sorted by path, on stdout. A mode, a time and an owner are not listed, so a command that only touches a file
 or changes its mode wrote nothing.
 
+A name given to --exclude is skipped inside the walk, as treesum's Skip: a folder of that name is never opened, so what is
+under it is neither listed, counted nor refused (a hard-linked node_modules under pnpm does not stop the run), and a
+write under it, or to it, is no write. A name is one path element: a name that is blank or holds a slash is a usage
+error, and a name that matches nothing changes nothing. A link whose target reaches a name left out is still refused,
+as the listing does not cover it.
+
 A tree that treesum refuses, before or after the command, is a refusal that names the path: a device, a FIFO, a
 socket, a file with a second name, a link that leads out of the tree or loops, a name that is not UTF-8 text,
-and a tree over a cap. Nothing is skipped. A refusal before the command ends the run before the command
+and a tree over a cap. Nothing is skipped but what --exclude names. A refusal before the command ends the run before the command
 starts.
 
 The command's own exit code is kept: a command that fails ends the run with its code, and the list of what it
@@ -86,7 +93,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	entries := fl.Int("max-entries", defaultEntries, "")
 	size := fl.Int64("max-bytes", defaultBytes, "")
 	timeout := fl.Duration("timeout", defaultTimeout, "")
-	if err := fl.Parse(args); err != nil || fl.NArg() == 0 || *entries <= 0 || *size <= 0 || *timeout <= 0 {
+	skip := map[string]bool{}
+	bad := false
+	fl.Func("exclude", "", func(name string) error {
+		if strings.TrimSpace(name) == "" || strings.ContainsAny(name, "/\\") {
+			bad = true
+		}
+		skip[name] = true
+		return nil
+	})
+	if err := fl.Parse(args); err != nil || bad || fl.NArg() == 0 || *entries <= 0 || *size <= 0 || *timeout <= 0 {
 		fmt.Fprint(stderr, usage)
 		return exitUsage
 	}
@@ -113,6 +129,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	defer folder.Close()
 	caps := treesum.Caps{Entries: *entries, Bytes: *size}
+	if len(skip) > 0 {
+		caps.Skip = func(rel string) bool { return skip[rel[strings.LastIndexByte(rel, '/')+1:]] }
+	}
 
 	_, before, err := treesum.Sum(folder, ".", caps)
 	if err != nil {

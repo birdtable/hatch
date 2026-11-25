@@ -1,11 +1,11 @@
-github.com/birdtable/go-files v0.15.0 h1:gHMGC5jHY8CcJlet2mTz52yBGBLV6uTLy6spPGKqY/w=
-github.com/birdtable/go-files v0.15.0/go.mod h1:f164jeSLXcu+vNFaYyn2AyDvbXh+KJ57S5NcV25Yq5w=
+github.com/birdtable/go-files v0.16.1 h1:fHxpns0aip64Dxiu3HSx1y6rrz97bGwt69oPAovMdaY=
+github.com/birdtable/go-files v0.16.1/go.mod h1:Shx2v2nWwFH711+HctoTSjSDfIW9xnGooob2uZrml+o=
 github.com/birdtable/go-proc v0.7.0 h1:d74pQaI0xYlfHJyMD6i4Ip6s4PlIhkGY0qo4dcH2bbk=
 github.com/birdtable/go-proc v0.7.0/go.mod h1:rVuv/0TnCuzAn3qezhM7X9Cgiv454azei2Srt1PldzE=
-github.com/birdtable/go-testkit v0.2.0 h1:lUpiv0RHsGsP4kz8eW5q9B6OLOrVCij1Ti05RuYsGgo=
-github.com/birdtable/go-testkit v0.2.0/go.mod h1:4NZgsg8gJU/2MwyYv8MyJO9sh2j+rjGyPmcYfVS0Lz8=
-github.com/birdtable/go-testkit/taskfile v0.1.0 h1:gLaIqD2l/DdkhZZYd2I66lNSuO17tJ3zRUof+w+ywBc=
-github.com/birdtable/go-testkit/taskfile v0.1.0/go.mod h1:hwfclurzF7RLTqNrNTvPU+Z47FMFVhOeFV01OcqAYo0=
+github.com/birdtable/go-testkit v0.3.1 h1:ochpuiBPj29SIwpVeYqNWOfkxef0nlWREzKcgM3N6DU=
+github.com/birdtable/go-testkit v0.3.1/go.mod h1:4NZgsg8gJU/2MwyYv8MyJO9sh2j+rjGyPmcYfVS0Lz8=
+github.com/birdtable/go-testkit/taskfile v0.1.1 h1:2qQmsNEDdd9Ed9lUD1ScRiVRs3dNxFiz29nD9dO3gxw=
+github.com/birdtable/go-testkit/taskfile v0.1.1/go.mod h1:hwfclurzF7RLTqNrNTvPU+Z47FMFVhOeFV01OcqAYo0=
 github.com/bitfield/gotestdox v0.2.2 h1:x6RcPAbBbErKLnapz1QeAlf3ospg8efBsedU93CDsnE=
 github.com/bitfield/gotestdox v0.2.2/go.mod h1:D+gwtS0urjBrzguAkTM2wodsTQYFHdpx8eqRJ3N+9pY=
 github.com/cilium/ebpf v0.22.0 h1:v2ktp0roffpMOj2MMf3idtCQZOsAoC4BJbAJN+ke2bY=
