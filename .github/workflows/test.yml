@@ -60,7 +60,15 @@ jobs:
           echo "GO_TEST_RACE=${race:-off}" >> "$GITHUB_ENV"
           events="$RUNNER_TEMP/go-test.json"
           status=0
-          go test -json $race -shuffle=on -count=1 -skip '^TestAListAnotherAccountOwnsIsRefused$' ./... > "$events" || status=1
+          # Each name left out with -skip must be a real test, so a rename cannot drop one unseen.
+          # The row is in a file built for Unix only, so Windows has no such test to find.
+          for name in TestAListAnotherAccountOwnsIsRefused; do
+            if [ "$RUNNER_OS" != Windows ] && ! go test -list "^${name}\$" ./... | grep -x "$name" > /dev/null; then
+              echo "::error::-skip names $name, which no test has"
+              status=1
+            fi
+          done
+          go test -json $race -shuffle=on -count=1 -skip '^(TestAListAnotherAccountOwnsIsRefused)$' ./... > "$events" || status=1
           if [ "$RUNNER_OS" = Linux ]; then
             go test -c $race -o "$RUNNER_TEMP/names.test" ./internal/names || status=1
             (
@@ -92,6 +100,15 @@ jobs:
           line="tests: $passed passed, $failed failed, $skipped skipped (race $GO_TEST_RACE)"
           echo "$line"
           echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          # On Linux the root-only row must show a pass event of its own, not only the absence of a skip.
+          if [ "$RUNNER_OS" = Linux ]; then
+            root=$(jq -R -n '[inputs | fromjson? | select(.Test == "TestAListAnotherAccountOwnsIsRefused" and .Action == "pass")] | length' "$events" | tr -d '\r')
+            echo "root row: $root pass"
+            if [ "$root" -ne 1 ]; then
+              echo "::error::TestAListAnotherAccountOwnsIsRefused has no pass event"
+              exit 1
+            fi
+          fi
           if [ "$TEST_OUTCOME" != success ] || [ "$failed" -ne 0 ] || [ "$skipped" -ne 0 ] || [ "$passed" -eq 0 ]; then
             exit 1
           fi
