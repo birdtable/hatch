@@ -1,4 +1,10 @@
-<p align="center"><img src="docs/mark/hatch-light.svg" alt="hatch" width="96"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/mark/hatch-banner-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/mark/hatch-banner-light.svg">
+    <img src="docs/mark/hatch-banner-light.svg" width="241" alt="hatch">
+  </picture>
+</p>
 
 # hatch
 
