@@ -1,6 +1,6 @@
-# Runs go vet and go test on GitHub's hosted runners, on Linux, macOS and Windows, for every pull
-# request, every push to main, and by hand. It holds no secret, and its token reads the repository's
-# contents alone. Every module is fetched through the public Go module proxy, as a program that
+# Runs go vet and go test on GitHub's hosted runners: Linux and Windows for every pull request, and
+# Linux, macOS and Windows for every push to main, every tag push, and by hand.
+# It holds no secret, and its token reads the repository's contents alone. Every module is fetched through the public Go module proxy, as a program that
 # imports hatch fetches them, and nothing is kept in the Actions cache.
 name: test
 
@@ -8,17 +8,24 @@ on:
   pull_request:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# One run per ref: a newer push to the same ref cancels the older run.
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # macOS runs on a push to main, a tag push and by hand; a pull request runs Linux and Windows.
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-latest","windows-latest"]' || '["ubuntu-latest","windows-latest","macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
